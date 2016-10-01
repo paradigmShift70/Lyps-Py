@@ -1,0 +1,88 @@
+Analogy
+=======
+Identity of relation
+- relations among ordered pairs
+
+Reasoning by ananlogy is a process of, from a given pair (x, f(x)),
+extrapolating the function f.
+
+Descriptive Domains
+-------------------
+
+Relation Domains
+----------------
+Temporal
+
+Physical
+   composition hierarchy
+   Spacial relationships
+   Orientation relationship
+
+Conceptual
+   classification hierarchy
+   purposive
+
+
+
+
+Language is about the description and relation of objects.
+These descriptions and relations modeled by predicates.
+
+On a higher level individual propositions may be taken as objects.
+Descriptions (modifiers) and relations of propositions are
+   currently modeled by different methods.
+
+   Descriptives
+      Negation
+      Modal Logics (Modal, contrary to fact)
+         Alethic
+         Deontic
+         Epistemic/Doxastic
+         Temporal
+      Frequency
+         In some times/cases, P
+      Source
+         personal opinion
+         another person
+         etc.
+
+   Relations
+      Truth-Functional Relations (purely logical)
+
+      Bimodal Logic
+                        closed  
+         Probability       *
+         Obligation        *
+         Belief            *
+         Before/After
+         Frequent          *
+         Confidence        *
+
+         Probability( P > Q )     Probability( P = Q )     <>
+         Obligatory( P > Q )      Obligatory( P = Q )      []
+         Belief( P > Q )          Belief( P = Q )          <>
+         Temporal( P > Q )        Temporal( P = Q )
+         Frequency( P > Q )       Frequency( P = Q )
+         Confidence( P > Q )      Confidence( P = Q )
+         
+         Pleasure(
+            contentment/euphoria/delight
+
+      Causal
+         P caused Q
+            Dynamic Logic
+            [a]P, after event a, it's necessarily that P.
+            <a>P, after event a, it's possible that P.
+
+      Spacial Relations
+         P occurred within inter-causal distance from Q
+         Q occurred outside of causal distance from Q
+
+
+Language is used to construct models.
+
+(and                        truth functional relation
+     (divine                   class
+        god)                      object
+     (mortal                   class
+        human))                   object

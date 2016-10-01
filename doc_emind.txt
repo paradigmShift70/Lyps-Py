@@ -1,0 +1,662 @@
+
+The mind apprehends and reasons about the external world as objects and
+relations.  This notion of objects and relations serves as the foundation for
+the information storage and manipulation mechanisms; namely: hierarchies,
+pattern matching, consequence and analogy.  All of which readily lend
+themselves to being modeled within a computer program.
+
+Objects & Relations
+===================
+
+The human mind apprehends and reasons about the external world as objects and
+relations.  The following examples should serve to illustrate this notion:
+
+    Tom is tall.     'tall' describes the object 'Tom'
+    Sally drove.     'drove' describes the object 'Sally'
+    Tom sees Sally.  'sees' describes the object (Tom,Sally)
+
+The first two examples should be clear enough.  However, the third example
+might confuse without explanation.  The object (Tom,Sally) is called a tuple,
+as collection of ordered items.  What this means is that for example,
+(Sally,Tom) is a completely different object -- order matters.  The tuple
+represents a relationship among its members.  As an aside for now, notice
+that a tuple is a hierarchially structured object consisting of two members.
+So, in light of this new understanding the third example above should come
+into focus.  'sees' describes the relationship object defined by the
+(Tom,Sally).  Now refer back to the first two examples.  The objects being
+described in these two examples are also tuple objects - tuples of 1.  Theory
+supports that a tuple object can have one or more subordinates up to any number,
+though in practice tuples of 1 or 2 are by far the most common.  'between' is an
+example of a tuple of 3.
+
+   Pip is between Tom and Sally.
+
+   'between' describes the object (Pip,Tom,Sally)
+
+Terms such as 'tall', 'drove', 'sees' and 'between' are called predicates.  A
+great deal of English statements can be reduced to predicates and tuples without
+losing any meaning.  For brevity we will write such statements using the
+following simple notation
+
+   (<predicate> <tuple-object-1> <tuple-object-2> ...)
+
+To illustrate let's code the above examples using this notation.
+
+   Form                      Predicate   Described Object
+   -----------------------   ---------   ----------------
+   (tall Tom)                tall        (Tom)
+   (drove Sally)             drove       (Sally)
+   (sees Tom Sally)          sees        (Tom,Sally)
+   (between Pip Tom Sally)   between     (Pip,Tom,Sally)
+
+Notice again as an aside that the predicate object relation is hierarchial and
+that our notation can be re-imagined as a hierarchy very simply by placing the
+first symbol (the predicate) at the top of the hierarchy and each of the
+remaining symbols is a subordinate.
+
+   tall      sees            between
+    |        /  \            /  |  \
+    |       /    \          /   |   \
+   Tom    Tom    Sally    Pip  Tom  Sally
+
+Predicates include
+   Declarative
+      epistemic/information
+   Imperative
+      computer-code-like
+         sequence (collective sequence of singular state changes)
+         decision-making
+
+Higher-levels of relations among predicates themselves is possible, resulting
+in even more complex hierarchies.
+
+   Tom is tall AND Pip is between Tom and Sally.
+
+   (tall Tom) AND (between Pip Tom Sally)
+
+But notice that the two predicates constitute a tuple of subordinates for AND,
+hence:
+
+   (AND (tall Tom) (between Pip Tom Sally))
+
+Which translates into the following logical hierarchy:
+
+        AND
+       /   \
+      /     \
+     /       \
+   tall    between
+    |      /  |  \
+    |     /   |   \
+   Tom  Pip  Tom  Sally
+
+Statements can be expanded to any length or number of hierarchy levels by
+analogously expanding this reasoning to any level.
+
+In this way all information can be encoded into hierarchies to relay important
+relational information to the eMind.
+
+Hierarchies
+===========
+
+As we have seen language naturally divides itself into hierarchial structures.
+Can this be extended to all information?
+
+As a creature who experiences the world around ourselves we seem to take it in,
+and experience it as a whole.  When we look out across a scene we seem to
+experience the whole, or large parts of it all at once.  Whether this is
+actually how the mind apprehends its environment or not is a topic for
+cognative science.  What I am more interested in here is getting a computer to
+mimic this behavior.  A computer can consider exactly one piece of data at a
+time, such as a single number, a single object name, or a single predicate
+name.  Hierarchial arrangements of data allow a computer to effectively 'see'
+the whole at once; or any collective part; or any singular object by focusing
+upon the top node of a hierarchy, an intermedicate node or a leaf (bottom)
+node respectively.
+
+Hierarchies allow us to express a variety of relationships.  Above we saw how
+a hierarchy can be used to express linguistic relationships.  Other sorts of
+relationships expressable via a hierarchy include:
+
+   composition - A hierarchy can model the structure of any physical or
+                 conceptual object.  E.g. Hand is composed of a palm which
+                 itself has 4 fingers and a thumb arranged asymmetrically such
+                 that hands occur in pairs as mirror images.
+
+                 A particularly surprising application of composition
+                 hierarchies is one that comes from imagery of one's
+                 environment.  The root of such a hierarchy is the 'self'.
+                 All relations are ultimately with regard to one-self.
+                 Perhaps there is only a single child node from self which
+                 would be the ground, floor or path upon which one is
+                 standing.  All objects of the world then 'sprout' from the
+                 'ground' node as hierarchies.  e.g. a car might be ahead and
+                 to the left.  The car itself is composed of systems,
+                 sub-systems and parts.  
+
+   familial relations
+               - aparant
+
+   classification
+               - aparant
+
+   time        - A hierarchy can model the temporal relationships quite
+                 easily.  From the self at the root of this hierarchy are
+                 three subordinates: past, present & future.  Present always
+                 contains the current state of the eMind.  Each time the
+                 eMind's state changes, the prior state is moved to the 'Past'
+                 hierarchy.  The 'Past' is a variable-length tuple which can
+                 lengthen by adding new information.  In this way, the past
+                 contains a sequence of mental states in reverse-chronological
+                 order going further into the past.  The 'Future' hierarchy
+                 will be a lot more complex containing plans, deferred thought
+                 processes (perhaps due to interruption), etc.
+
+                                     *self*
+                                       |
+                                       |
+                                     (now)
+                                       |
+                                       |
+                     t+m    t+n       t=0       t-1    t-2    
+         plans <------*------*---<<----*---->>---*------*------> past states
+                      |      |         |         |      |
+                     / \    / \       / \       / \    / \
+
+
+The Lexicon
+===========
+
+The lexemes used in models must have consistent use across the board - forever.
+Lexical elements are stored in a dictionary called a lexicon.
+
+The lexicon is organized as a variable sized tuple where words are arranged
+alphabetically.  Each word's 'definition' has a structure something like the
+following:
+
+      term
+
+         properties        map:   propertyName -> value
+
+         analysis          (from encountered instances)
+                           map:   top-level predicates -> tuple
+
+         synthesis-rules   list:  tuple or tuple-patten
+
+         classes           map:   hierarchyName -> parentTerm
+
+'Properties' is a map of name-value pairs mapping symbols to values.
+Properties may be useful in understanding the 'term'.  Examples of
+properties include things such as:
+
+   'mode'       -> one of: 'physical', 'conceptual', etc.
+   'mass'       -> ( <number>, <unit> )
+   'dimensions' -> ...
+
+'Analysis' is a list of all thus-far observed uses of 'term' in Lyps
+hierarchies.
+
+'synthesis-rules' is a 
+
+'Classes' is a map from the name of a classification hierarchy to term's
+parent term/concept.  Classification trees aren't actually stored, however
+they can be reconstructed at any time using this information.
+
+When eMind encounters a use of a term t, it records the complete tuple
+expression.  It then compares it to previously observed uses of term to
+attempt to discern patterns of proper use of the term.  This is best
+illustrated with an example.
+
+   We'll consider how eMind might discern the correct usage for the term
+   'walk'.
+
+   Observed Use                      Usage Pattern
+   ------------                      -------------
+   (walk Sally)
+
+   Since there are no prior past observations for the use of 'walk', eMind
+   will Wimply store this single observation.  The meaning of which is
+   that to the best of eMind's knowledge, 'walk' has one argument and only the
+   symbol 'Sally' may be used as an argument to 'walk'.
+
+   Observed Use                      Usage Pattern
+   ------------                      -------------
+   (walk Jan)                        (walk Sally)
+
+   With this new observation, the first thing that eMind will do is to 
+   insure that the number of arguments to 'walk' are the same as observed
+   previously.  For eMind to function correctly all semantic ambiguity must be
+   eliminated.  For eMind every term has exactly one use and meaning.
+
+   Next eMind will attempt to determine what's similar between 'Sally' and
+   'Jan'.  This occurs by searching the classes of the two terms.  eMind
+   will always make the comparison of similarity as conservative as possible.
+   So eMind will update it's past observances.
+
+   Observed Use                      Usage Pattern
+   ------------                      -------------
+   (walk Jan)                        (walk <Human AND Female>)
+
+   eMind has now generalized the use of the term 'walk' to being applicable to
+   any object which is a subclass of Human AND a subclass of Female.
+
+   eMind receives another input.
+
+   Observed Use                      Usage Pattern
+   ------------                      -------------
+   (walk John)                       (walk <Human AND Female>)
+
+   eMind will further generalize the usage pattern by ackknowledging that
+   it's observed uses other than Female.
+
+   Observed Use                      Usage Pattern
+   ------------                      -------------
+   (walk John)                       (walk <Human>)
+
+   The Usage Pattern is what appears in Analysis.
+
+
+Pattern Matching
+================
+
+A pattern (also called a form) is an image or picture with blanks into which
+appropriate information is filled in to create an instance.  If a set of
+information is an instance of a pattern then the pattern is matched.
+
+Patterns
+--------
+For example:  (AND P Q) is a pattern, where P and Q are place-holders for
+              information of a particular type.  This particular pattern
+              demands that each of it's place-holders be replaced with
+              propositions.  If ever we encounter information that conforms to
+              this pattern (e.g. (AND (tall Tom) (short John)), we have matched
+              the information to this pattern.  The information is called an
+              instance of the pattern.
+
+Pattern Sets
+------------
+On a higher level a pattern may be a set of forms of the above type.
+
+For example:  (OR P Q), (IMPLIES P R), (IMPLIES Q R) is an example of a pattern
+              set.  To match a pattern set, the data must consist of at least as
+              many chunks of information (in this case 3), and each pattern in
+              the set must have a corresponding instance.  Each instance can
+              only be matched to one of the patterns in the pattern set.
+              Moreover, the use of placeholders (here, P, Q and R) must be
+              consistent with the instance. (every instance of a given
+              place-holder in the pattern set must match to a single value,
+              that is, every P must match to a certain value, every Q, and
+              so forth.  However, it is acceptable if two different
+              place-holders mapps to the same information.
+
+Matching pattern sets to instances can be difficult with the computer.
+Reordering the forms within the pattern set can greatly improve matching success
+and speed.
+
+primaries( form ):                # helper function
+   Returns a list consisting of the concatenation of each of the symbols
+   encountered in a form when scanning the written form from left-to-right.
+   This list is called the primaries of the form.
+
+reorderPatternSet( set of Form ):
+   1. For each form:
+      a. primariesList <- primaries( form )
+      
+      b. primariesStr  <- from primariesList
+         For example, primaries(AND (IMPLIES P Q) (NOT R)) results in the list:
+         (AND, IMPLIES, NOT).  The primaries sting is "AND IMPLIES NOT".
+   
+      c. primariesBin[ primariesStr ].append( form )
+         Forms are separated into bins according to the Primaries strings
+         (map: primaresStr -> list of Form).
+      
+      d. complexityBin[ len(primariesList) ].append( primariesStr )
+         PrimariesStr's are separated into bins according to the length
+         of primariesList.
+         (map: len(primariesList) -> list of primariesStr).
+   
+   2. For each list of primariesStr in complexityBin:
+      a. Sort the list of primariesStr by len(primariesBin[primariesStr])
+         Sort primaries by the number or forms that instantiate it.
+         (we want less used forms first).
+      
+      b. For each primariesStr in sorted list of primariesStr:
+         i.  append to re-orderedPatternSet each form in primariesBin[ primariesStr ]
+   
+   3. return re-orderedPatternSet
+   
+Consequence Patterns
+--------------------
+A consequence pattern is a pattern which might be thought of occurring over
+time.  The consequence pattern states that if an instance of an initial pattern
+is encountered then it will result in some other instance.  The consequence
+pattern begins with a pattern set, and ends with a pattern set.  When the
+initial pattern set is matched.  The place-holder substitutions are then used
+to construct the consequence instance by analogy, that is by systematically
+replacing the place-holders in the consequence pattern with the corresponding
+values from the initial pattern set.
+
+   (P -> Q), P      <== initial pattern set
+   -----------
+   Q                <== consequence pattern set
+
+It's possible to have multiple initial pattern sets or multiple consequnce
+pattern sets.
+
+   (AND P Q)        <== initial pattern set
+   ---------
+   P       Q        <== consequence pattern sets.  P is one set, Q is another.
+
+The general form of this consequence relation is as follows:
+
+   <initial states>
+   ----------------
+   <final states>
+
+The semantics of a consequence relation are absolute.  The probability of one
+of the pattern sets resulting as a consequence of the initial pattern set is
+1.0.  If there are k consequence pattern sets, then the a-priori probability
+of any given consequence pattern set is 1/k.
+
+The current concept of consequence is not well-flushed out.  Some notions of
+consequence might include probabilities of particular consequences.  Still
+others might include temporal delay information.
+
+analogy
+-------
+The process of matching an initial pattern set and instantiating a consequence
+pattern set is an anlogical process.  There are other kinds of analogy that can
+occur.  The process of generalizing analogy is not complete.  There are other
+concepts of analogy not expressed by this process.
+
+
+
+
+
+
+
+Firstly, all information is stored into hierarchies.  Hierarchies enable one
+to refer to singular objects or abstractions of collections of objects.
+
+All models in the mind are organized into hierarchies.  Lingustic
+communication serilizes portions of hierarchial models for transfer to other
+minds.
+
+For this reason I have chosen a lisp-like language (Lyps) to represent
+information.
+
+All data going into and out of the eMind will be in Lyps.
+
+All data will be stored internally in Lyps structures.
+
+
+
+
+
+
+
+
+Patterns and Anti-Patterns
+--------------------------
+A consequence relation may serve as an example pattern or an example
+anti-pattern.  While a pattern serves as an example of what is an acceptable
+(or desirable) consequence relation, an anti-pattern is an example of what is an
+unacceptable (or undesirable) consequence relation.  Specifically, patterns
+illustrate consequence relations to the computer.  However, patterns alone tend
+to over-generate.  That is, when generating search trees to find a path or
+solution to a problem, patterns alone produce things such as infinitely
+recursive branches of the search tree.  An anti-pattern is an example of the
+sort of thing that should be excluded from the search tree.  Anti-patterns
+prevent the computer from entering infinite recursion.  Hence, previously
+unsolvable problems, such as direct theorem proving using a standard logical
+calculi are solvable via the anti-pattern.
+
+Strategies and Anti-Strategies
+------------------------------
+A high-level consequence relation is called a strategy.  It provides information
+to the computer on approaches to finding the solution.  While an anti-stragety
+is analogous to an anti-pattern, it provides the computer with information on
+approaches that will not work.
+
+While strategies and anti-strategies are simply a higher level on the hierarchy
+of patterns and anti-patterns, we have not yet worked out what these objects
+will finally look like.  I do have some ideas:
+
+   - (anti-)strategies must work across multiple consequence steps, and multiple
+     nesting levels.
+
+   - (anti-)strategies may be highly felxible.
+   
+Example:
+
+   A group of strategies for solving proofs of formal logic would include
+   rules dictating how to work towards the final product.
+     
+      If the sought conclusion form is (P -> Q), try the following:
+         begin a nested proof in which one attempts to prove the simpler
+         sequent:  P  |-  Q.
+      
+      If the sought conclusion form is ..., try:
+ 
+   If all of the above strategies fail attempt the following:
+      From our sequent:  P  |-  Q
+         Assert P.
+         begin a nested proof in which one attempts to prove the simpler
+         sequent:  -Q  |-  (R ^ -R)
+      Should this succeed:
+         end the nested proof.
+         insert --Q into the proof with justification -I.
+         insert Q into the proof with justification -E.
+
+
+Consequence
+   properties
+      - probability of final state, given initial state
+      - time delay  of final state,  given initial state
+
+
+consequence relations
+---------------------
+
+deduction
+      - probability:    1.0          (certain)
+      - time delay:     0.0          (instantaneous)
+
+induction
+      - probability:    [0.0, 1.0]   (probable)
+      - time delay:     0.0          (instantaneous)
+
+causal
+      - probability:    [0.0, 1.0]   (probable)
+      - time delay:     n > 0.0      (delayed)
+
+deterministic
+      - probability:    1.0          (certain)
+      - time dealy      n is tiny    (small delay)
+
+
+
+
+
+What's the meaning of probability?
+- There are k possible consequences.
+- Each consequence has a probability.
+- The sum of all possible consequences is 1.0
+- If the probabilities of individual consequences is unknown
+  we assign an 'apriori probability' of 1/k to each consequence.
+
+
+
+
+
+Tree Math
+=========
+Tree math is about collective manipulation of data much like matricies.
+Trees are 2 dimensional objects.
+Trees encapsulate two types of information:  structure, values
+
+null
+   'null' is the empty Tree.
+
+Tree
+   A Tree is a tuple of infinite length of values such that:
+      - The first value (tuple index 0) is required and is the value of the current vertex or node.
+      - Subordinates are trees that extend or shrink the length of the tuple.
+      - Unoccupied subordinates contain the value null, and are typically implied.
+   
+   (value, sub-1, sub-2, ... sub-n, null, null, null, null, ...)
+   
+   If a value is unique in a tree, one may refer to a node by the value,
+                                   one may refer to the tree as value*.
+
+length( tree node )
+   Length of tree node tuple minus 1.
+
+Path/Key
+   A path (also called a key) is a vector v = [ ... ] of integers.
+
+Path element index
+   let v be a path vector.  v sub n = v[n] = nth element in v.
+
+length( path )
+   Let v be a path vector.  length(v) = number of entries in v.
+
+Tv or T[...] meaning
+   Let T be a tree, v be a vector of indicies.  Tv is the subtree or value in T
+   accessed by traversing T using successive values in v.
+   For example, given T[v1, v2, ...], T' = T[v1], T'' = T'[v2], etc.
+
+   Each element indexes into the tuple of successively deep nodes.  An index of
+   0 always refers to the 0th element of a tuple, which is the value of the node.
+   
+   Hence, if 0 occurs in a path, it must always be the last element.
+
+path from T1 to T2
+   Let T1, T2 be tree nodes.  If T2 is a subordinate tree of T1,
+   'path from T1 to T2' is the vector path to reach T1 from T2.
+
+path math
+   if 'v1 = path from T1 to T2' and 'v2 = path from T2 to T3' then
+   'path from T1 to T3' = 'v1 + v2'
+   
+   if 'v1 = path from T1 to T3' and 'v2 = path from T2 to T3' and 'T1 != T3' then
+   'T1 between T2 and T3' or 'T2 between T1 and T3'.
+
+Valid Path
+   let T be a tree, v path vector.  'v is valid in T' iff 'Tv != null'
+
+floor( T )           - structure
+   Let T be some tree.  floor(T) = min(for each path to a leaf in T compute it's length)
+
+ceiling( T )         - structure
+   Let T be some tree.  ceiling(T) = max(for each path to a leaf in T compute it's length)
+
+range( T )           - structure
+   Let T be some tree.  range(T) = the closed interval [ floor(T), ceiling(T) ]
+
+T1 structural intersect T2, T1 - T2
+   Because we're taking the intersection of just the edges, this operation is not
+   commutative; i.e. T1 structural intersect T2, is not the same as
+   T2 structural intersect T1.  The operation preserves the vertecies of the
+   first argument.
+   
+   Let T1,T2,T1* be trees.  For any path v, 'T1 structural intersect T2' =df 
+   T1 - T2 = (For any path v, T1v AND T2v)
+
+T1 intersect T2, T1 * T2
+   T1 * T2 is the subtree common to both T1 and T2.
+
+T1 =f= T2, formal equality
+   If
+      For any paths v1,v2, and for any trees T1,T2( if T1[v1] = T1[v2] then T2[v1] = T2[v2] )
+   Then
+      T1 =f= T2
+   
+   The equality T1[v1] = T2[v1] is then called a formal solution.
+
+   (+, (*, 8 7), (*, 8, 7)) =f= (+, 3, 3)
+   
+      where, (*, 8, 7) =f= 3
+   
+   visually:
+   
+            +               +
+           / \             / \
+          /   \           /   \
+         *     *         3     3
+        / \   / \
+        8 7   8 7
+
+T1 = T2, semantic equality
+   Let T1,T2 be two trees that are formally equal for the formal solution a =f= b.
+   
+   strong form:
+   
+   if ( T1 =f= T2 ) and (for any formal solution a =f= b, a = b semantically)
+   then T1 = T2.
+   
+   weak form:
+   
+   if ( T1 =f= T2 ) and (for any formal solution a =f= b, possible(a = b semantically))
+   then T1 = T2
+  
+   trivially:
+   
+   T1 =f= T1  iff  T1 = T1
+
+T1->T2( value ), tree value function
+   If T1 =f= T2 then the pair T1,T2 defines a function: T1 -> T2.
+   The value of this function is simply what 'value' formally equates to in the
+   formal solutions for T1 =f= T2.
+
+mappable( T1, T2 )
+   Let T1, T2 be two trees.  'T1 is mappable to T2' if,
+   for any path if v is valid in T1, v is also valid in T2.
+   
+   Notice that mapable is similar to but considerably weaker than =f=.
+
+map( T1, T2 )
+   Let T1,T2 be two trees, where 'T1 is mappable to T2'.  The result is the
+   map: T1 -> T2 such that for each v to a leaf in T1 -> T2 at v
+   
+
+
+- Let T1, T2 be two trees.  The tree-union of the two trees is the 
+  
+- Let T1, T2 be two trees.  The tree-intersection of the two trees is the
+  largest subtree (starting from the roots of T1 and T2) which is common to both trees.
+  
+  T1 intersect T2 =
+  - if T1[0] != T2[0], null
+  - if T1[0] == T2[0], (T1[0], T1[1] intersect T2[1], T1[2] intersect T2[2], ...)
+  
+            T1              T2                  T1 intersect T2
+           / \             / \                        /  \
+          /   \           /   \                      /    \
+         A     B         A     B                    A      B
+              / \        |
+             /   \       |
+            N     M      Z
+  
+  The result is the largest tree common to both T1 and T2.
+
+- Let T, T' be two trees.  The equation T = T' asserts that two trees are
+  equal.  However, they may not be identical.  Consider an example:
+  
+            T               T'
+           / \             / \
+          /   \           /   \
+         A     B         X     Y
+              / \        |
+             /   \       |
+            N     M      Z
+   
+   For these trees to be equal it must be the case that:
+         A = (X (Z))
+         (B (N) (M)) = Y
+   
+   Tree equality is tricky:
+   
+   T = T' iff
+   
+

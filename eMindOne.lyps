@@ -1,0 +1,170 @@
+;;;;;;  Logging session ( 2015-05-23T03:16:03.426868 ): eMindOne.lyps
+>>>
+(def!! 'mem (map '( (workingMem   '( null ) )
+                    (referenceMem  (map '( (pastMem        '( null   ) )
+                                           (futureMem      '( null   ) )
+                                           (dictnionaryMem  (map '( )) )
+                                           (conceptMem      (map '( )) )
+                                           (patternMem     '( null   ) )
+                                           (classHier       (map '( )) )
+                                           (structureHier   (map '( )) ) ) ) ) ) ) )
+>>>
+;; adds a definition to the dictionary
+(defun! '(defTerm term definition)
+        '(mInsert! (dig mem '(referenceMem dictionaryMem)) '( (term definition) ) ))
+>>>
+;; adds a concept to the concept memory
+(defun! '(defConcept name description)
+        '(mInsert! (dig mem '(referenceMem conceptMem)) '( (name description) ) ) )
+>>>
+;; adds a pattern to the pattern memory
+(defun! '(defPattern name pattern)
+        '(mInsert! (dig mem '(referenceMem patternMem)) '( (name pattern) ) ))
+>>>
+;; adds a class tot he class hierarchy
+(defun! '(defClass className superclassName subclassDistinction)
+        '(mInsert! (dig mem '(referenceMem classHier))
+                            '( (className ('superclass superclassName) ('specialization subclassDistinction)))))
+>>>
+;; adds a structured object definition
+(defun! '(defStructure structureName componentsAndRelations)
+        '(mInsert! (dig mem '(referenceMem structureHier)
+                            '( (structureName componentsAndRelations) ) )))
+>>>
+;; (dig aTree aPath)
+;;
+;; Given a nested structure of lists and maps, this function will
+;; perform a depth-first traversal down aPath and return the
+;; object in that location.
+(defun! '(dig aTree aPath)
+        '(if (isNull? aPath)
+             'aTree
+             '(dig (at aTree (first aPath)) (rest aPath)) ))
+>>>
+;; adds anObj to the front of the pastMem list
+(defun! '(archive anObj)
+        '(minsert '(dig mem '(referenceMem) )
+                  '(pastMem (cons 'anObj (dig mem '(referenceMem pastMem))))))
+>>>
+;; push the current task onto the futureMem stack.  Does not clear workingMem
+(defun! '(pushWorkingMem)
+        '(block '(
+                (mInsert! (dig mem '(referenceMem))
+                         '( (futureMem (cons (dig mem '(workingMem)) (dig mem '(referenceMem futureMem)))) ))
+                (mInsert! mem '( (workingMem '( null ) ) ) )
+                ) ))
+>>>
+;; Classify the argument.  Return a tuple (<expr> type)
+;;
+;; (classify <expr>)
+(defun!! '(classify expr)
+         '(cond '( ((isNull?   expr)  '( )                 )
+                   ((isNum?    expr)  (cons expr '(number)))
+                   ((isSymbol? expr)  (cons expr '(symbol)))
+                   ((isString? expr)  (cons expr '(string)))
+                   ((isList?   expr)  (cons expr '(list  ))) )))
+>>>
+;; Definition
+(defTerm 'not
+         (map '( (syntax      relation)
+                 (class       truth-functional-operator)
+                 (properties '( )))))
+>>>
+(defTerm 'and
+         (map '( (syntax      relation)
+                 (class       truth-functional-operator)
+                 (properties '(commutative associative)))))
+>>>
+(defTerm 'or
+         (map '( (syntax      relation)
+                 (class       truth-functional-operator)
+                 (properties '(commutative associative)))))
+>>>
+(defTerm 'implies
+         (map '( (syntax      relation)
+                 (class       truth-functional-operator)
+                 (properties '(transposition)))))
+>>>
+(defTerm 'iff
+         (map '( (syntax      relation)
+                 (class       truth-functional-operator)
+                 (properties '(commutative associative)))))
+>>>
+(story '( P )
+       '(
+        ( (not (not P)) )
+        ( P )
+        ) )
+>>>
+(story '( P Q )
+       '(story '( )
+               '(
+                ( ( P ) )
+                ( (AND Q (NOT Q)) )
+                ) )
+        ( (NOT P) )
+        ) )
+>>>
+(story '(P Q)             ;; variables
+       '(
+        ( (AND P Q) )     ;; input pattern  - all of
+        ( P Q )           ;; output pattern - one of
+        ) )
+>>>
+(story '(P Q)
+       '(
+        ( P Q )
+        ( (AND P Q) )
+        ) )
+>>>
+(story '(P Q)
+       '(
+        ( (OR P Q) (implies P R) (implies Q R) )
+        ( R )
+        ) )
+>>>
+(story '(P Q)
+       '(
+        ( P )
+        ( (OR P Q) (OR Q P) )
+        ) )
+>>>
+(story '(P Q)
+       '(
+        ( (implies P Q) P )
+        ( Q )
+        ) )
+>>>
+(story '(P Q)
+       '(story '( )
+               '(
+                ( P )
+                ( Q )
+                )
+        ( (implies P Q) )
+        ) )
+>>>
+(story '(P Q)
+       '(
+        ( (iff P Q) )
+        ( (implies P Q) (implies Q P) )
+        ) )
+>>>
+(story '(P Q)
+       '(
+        ( (implies P Q) (implies Q P) )
+        ( (iff P Q) (iff Q P) )
+        ) )
+>>>
+(story '( x )
+       '(
+        ( (raining weather) (go x outdoors) )            ;; Implicit 'AND'
+        ( become-wet x )
+        ) )
+>>>
+(story '( c x P Q )
+       '(
+        ( (for-any x (implies (P x) (Q x))) Pc )
+        ( Qc )        
+        ) )
+>>>

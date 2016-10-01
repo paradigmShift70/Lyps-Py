@@ -1,0 +1,98 @@
+;;;;;;  Logging session ( 2015-05-23T03:16:03.426868 ): eMindOne.lyps
+>>>
+(def!! 'mem (map '( (workingMem   '( null ) )
+                    (referenceMem  (map '( (pastMem        '( null   ) )
+                                           (futureMem      '( null   ) )
+                                           (dictnionaryMem  (map '( )) )
+                                           (conceptMem      (map '( )) )
+                                           (patternMem     '( null   ) )
+                                           (classHier       (map '( )) )
+                                           (structureHier   (map '( )) ) ) ) ) ) ) )
+>>>
+;; adds a sequence of states to the pastMem
+(defun!! '(story states)
+         '(block
+             '(
+              (def! aStory '(story))
+              (forEach 'state states
+                   '(push! aStory -1 (OrderForms state)))
+              (push! (dig mem '(referenceMem pastmem)) (list (isoDate) aStory) )
+              ))
+          )
+>>>
+;; Performs a depth-first search on the sentence appending the first symbol of
+;; list to the result list.
+;; e.g. (and (not P) (or (not A) B))   ===>   (and not or not)
+(defun!! '(primaries expr)
+         '(if (not (isList? expr))
+             '( )
+             '(cons (first expr)
+                    (applyAndFlatten 'primaries (rest expr)))))
+>>>
+;; (countLeaves <expr>)
+;; returns the number of syntactic leaf nodes in <expr>.
+(defun!! '(countLeaves expr)
+         '(cond '( ((isNull? expr)     0)
+                   ((isAtom? expr)     1)
+                   (1                  (countLeaves-aux (rest expr))))))
+>>>
+(defun!! '(countLeaves-aux expr)
+         '(if (isNull? expr)
+             '0
+             '(+ (countLeaves     (first expr))
+                 (countLeaves-aux (rest  expr)))))
+>>>
+(defun!! '(mapInst form instance)
+         '(mapInst-rec (map '()) form instance))
+>>>
+(defun!! '(mapInst-rec mapping form instance)
+         '(cond '( ((isNull?   form)   (if (isNull? instance)
+                                           mapping
+                                           null))
+                   ((isSymbol? form)   (if (hasKey? mapping form)
+                                          '(if (equal? (at mapping form) instance)
+                                               mapping
+                                               null)
+                                          '(block '(
+                                              (if (<> form instance)
+                                                  '(atSet! mapping form instance)
+                                                   null)
+                                              mapping)) ))
+                   ((and (isList? form) (isList? instance))
+                                        (if (mapInst-rec mapping (first form) (first instance))
+                                           '(mapInst-rec mapping (rest  form) (rest  instance))
+                                            null))
+                   (1                   null))))
+>>>
+(defun!! '(mapStoryState mapping form instance)
+         '(mapStoryState-aux mapping (copy form) (copy instance)))
+>>>
+(defun!! '(mapStoryState-aux mapping form instance)
+         '(if (isNull? form)
+             '(if (isNull? instance)
+                  mapping
+                  null)
+             '(if (isNull? (set! 'mapping (mapInst-rec mapping (first form) (first instance))))
+                  null
+                 '(mapStoryState-aux mapping (rest form) (rest instance)))))
+>>>
+(defun!! '(mapStory form instance)
+         '(mapStory-rec (map '()) form instance))
+>>>
+(defun!! '(makeInst form mapping)
+         '(cond '( ((isNull?   form)    '() )
+                   ((isSymbol? form)    (if (hasKey? mapping form)
+                                           '(at mapping form)
+                                            form))
+                   ((isList?   form)    (cons (makeInst (first form) mapping)
+                                              (makeInst (rest  form) mapping))))))
+>>>
+(defun!! '(depth form)
+         '(depth-rec 0 form))
+>>>
+(defun!! '(depth-rec dnum form)
+         '(if (or (isAtom? form) (isNull? form))
+             'dnum
+             '(max (depth-rec (+ 1 dnum) (first form))
+                   (depth-rec dnum       (rest  form))) ))
+>>>

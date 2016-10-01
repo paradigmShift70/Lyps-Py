@@ -1,0 +1,89 @@
+Lyps Documentation
+==================
+
+Lyps is a dialect of Lisp.
+
+Goals
+-----
+- Minimize the number of special forms
+
+   Special Forms
+   quote  - necessary because it alters normal evaluation order.
+
+The Language
+============
+Lexical Elements
+----------------
+   Comments
+      Comments extend from ';;' through '\n'.
+      All text between and including these two delimiters is ignored.
+
+   Delimiters:
+      ';', '#', '(', ')', '|', '[', ']', ';;', '\n'
+
+   Literals
+      NumberLiteral:  ('+'|'-')('0' .. '9')+ ( '.' ('0' .. '9')+ | '/' ('0' .. '9')+ )   # Decimal or Fraction
+      StringLiteral:  '"' (^('"'))* '"'
+      Symbol:         'a..zA..Z+-~!@$%^&*_=\:/?<>'
+                      { 'a..zA..Z+-~!@$%^&*_=\:/?<>0..9' }
+
+   Reserved Symbols
+         'null', 'true', 'false', 'class', 'name', 'parameters'
+
+Grammar
+-------
+   Start:
+      Object EOF
+   
+   Object:
+      NumberLiteral | StringLiteral | Symbol | List | '#' | '|' | ':' | '[' | ']'
+
+   List:
+      '(' [ Object { Object } ] ')'
+
+Library
+=======
+
+(def! '<symbol> <object>)        ;; Define a local var
+(def!! '<symbol> <object>)       ;; Define a global var
+(set! '<symbol> <object>)        ;; Change the value of a var
+(undef! '<symbol>)               ;; Undefine a var
+
+
+(lam '(<arg1> <arg2> ...)        ;; Return an anonymous function
+     '<expr>
+     )     
+(recurs <arg1> <arg2> ...)       ;; Call the host (enclosing) function.
+
+(block '(<expr1> <expr2> ...))   ;; Returns a block object.
+                                 ;; When evaluated returns the result of the last evaluation.
+
+
+
+(if <cond-expr>                  ;; Evaluates cond-expr.  On result of true,
+   '<then-expr>                  ;; On result of true, evaluates and returns then-expr.
+   ['<else-expr>])               ;; On result of false, evaluates and returns else-expr (or null)   
+
+(cond '(                         ;; Evaluates each cond-expr in turn until one evaluates
+   (<cond1-expr> <expr1>)        ;; to true.  Then the corresponding expr is evaluated
+   (<cond2-expr> <expr2>)        ;; and returned terminating the cond.
+   (<cond3-expr> <expr3>)
+   ...
+   ))   
+
+(case <cond-expr> '(             ;; Evaluates cond-expr then examines each val in turn
+   (<val1> <expr1>)              ;; the first val found that equals cond-expr, that
+   (<val2> <expr2>)              ;; expr is evaluated and returned terminating the case.
+   (<val3> <expr3>)
+   ))   
+
+(quote <expr>)                   ;; Return expr unevaluated
+
+(eval <expr>)                    ;; Evaluate and return expr
+
+(apply <fn> <list>)              ;; Create a new list of results of applying fn to each expr in list.
+
+(applyAndFlatten <fn> <list>)    ;; Create a new list of results of applying fn to each expr in list.
+
+
+(forEach <symbol> <list> <expr>)
