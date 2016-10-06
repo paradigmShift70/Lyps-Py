@@ -17,3 +17,12 @@ The current implementation uses a tree-walking interpreter.  I expect this to ch
 Uses
 ==========
 Educational Only.
+
+HOW TO USE
+==========
+Just needs Python 3.5.
+
+Download.
+
+execute:  python Lyps.py
+
