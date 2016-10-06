@@ -1424,7 +1424,7 @@ def LP_readLn( env, *args, **keys ):
 # ===============
 # Multi-Threading
 # ---------------
-@LDefPrimitive( 'parallel-eval' )  # (parallel-eval '(expr1 expr2 expr3 ...))                    
+@LDefPrimitive( 'parallel-eval' )  # (parallel-eval '(sharedVar1 sharedVar2 ...) '(expr1 expr2 expr3 ...))                    
 def LP_parallel_eval( env, *args, **keys ):
    pass
 

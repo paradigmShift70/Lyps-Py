@@ -1,3 +1,4 @@
+from ltk_py3.Scanner import *
 from LypsScanner import *
 from Lyps import *
 
@@ -115,10 +116,6 @@ class LypsParser( object ):
          self._scanner.consume( )
    
       return LList( *theList )
-      #if len(theList) == 0:
-         #return LNULL
-      #else:
-         #return LList(*theList)
 
 if __name__ == '__main__':
    xy = LypsParser( )

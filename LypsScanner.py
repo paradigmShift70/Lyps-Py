@@ -1,5 +1,4 @@
-import Scanner
-from Scanner import ParseError, ScannerState
+import ltk_py3.Scanner as Scanner
 import fractions
 
 class LypsScanner( Scanner.Scanner ):
@@ -35,19 +34,6 @@ class LypsScanner( Scanner.Scanner ):
 
    def __init__( self, ):
       super( ).__init__( )
-
-   def tokenize( self, aString, EOFToken=0 ):
-      try:
-         tokenList = super().tokenize( aString, EOFToken )
-
-         for tokLexPair in tokenList:
-            print( '{0:<4} /{1}/'.format( *tokLexPair ) )
-
-      except ParseError as ex:
-         print( ex.errorString(verbose=True) )
-
-      except Exception as ex:
-         print( ex )
 
    def _scanNextToken( self ):
       buf = self.buffer
@@ -103,9 +89,9 @@ class LypsScanner( Scanner.Scanner ):
          elif nextChar in LypsScanner.SYMBOL_FIRST:
             return self._scanSymbol( )
          else:
-            raise ParseError( self, 'Unknown Token' )
+            raise Scanner.ParseError( self, 'Unknown Token' )
 
-      except ParseError:
+      except Scanner.ParseError:
          raise
 
       except:
@@ -117,7 +103,7 @@ class LypsScanner( Scanner.Scanner ):
       
       nextChar = buf.peek( )
       if nextChar != '"':
-         raise ParseError( self, '\'"\' expected.' )
+         raise Scanner.ParseError( self, '\'"\' expected.' )
       buf.markStartOfLexeme( )
       buf.consume( )
       buf.consumeUpTo( '"' )
@@ -128,7 +114,7 @@ class LypsScanner( Scanner.Scanner ):
    def _scanNumOrSymbol( self ):
       buf = self.buffer
       
-      SAVE = ScannerState( )
+      SAVE = Scanner.ScannerState( )
       nextChar = buf.peek( )
 
       buf.markStartOfLexeme( )
@@ -176,7 +162,7 @@ class LypsScanner( Scanner.Scanner ):
       buf.markStartOfLexeme( )
       nextChar = buf.peek()
       if nextChar not in LypsScanner.SYMBOL_FIRST:
-         raise ParseError( self, 'Invalid symbol character' )
+         raise Scanner.ParseError( self, 'Invalid symbol character' )
       buf.consume( )
 
       buf.consumePast( LypsScanner.SYMBOL_REST )
@@ -186,7 +172,7 @@ class LypsScanner( Scanner.Scanner ):
    def _skipWhitespaceAndComments( self ):
       buf = self.buffer
       
-      SAVE = ScannerState( )
+      SAVE = Scanner.ScannerState( )
 
       while buf.peek() in '; \t\n\r':
          buf.consumePast( ' \t\n\r' )
@@ -203,5 +189,7 @@ class LypsScanner( Scanner.Scanner ):
 
 if __name__ == '__main__':
    scn = LypsScanner( )
-   scn.tokenize( '(a b c)\n' )
+   tokens = scn.test( '(a b c)\n' )
+   
+   # print tokens
    #scn.tokenize( '(set! mem (map \'( (a 0) (b 1) (c "Hello, World!") (d 3.14) (e null) (f asymbol) )))\n' )

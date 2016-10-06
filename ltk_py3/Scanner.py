@@ -33,7 +33,7 @@ class ScannerBuffer( object ):
          return self._source[ self._point ]        # raises on EOF
       except:
          return None   # Scanned past eof
-   
+
    def consume( self ):
       '''Advance the point by one character in the buffer.'''
       try:
@@ -136,7 +136,7 @@ class Scanner( object ):
 
       self.buffer.reset( sourceString )
       self._tok         = -1
-      #self._states      = { }
+      self._states      = { }
       self.consume( )
 
    def peekToken( self ):
@@ -177,6 +177,20 @@ class Scanner( object ):
       tokenList.append( (EOFToken,0) )
       
       return tokenList
+
+   def test( self, aString, EOFToken=0 ):
+      '''Scanner Testing:  Print the list of tokens in the input string.'''
+      try:
+         tokenList = self.tokenize( aString, EOFToken )
+
+         for tokLexPair in tokenList:
+            print( '{0:<4} /{1}/'.format( *tokLexPair ) )
+
+      except ParseError as ex:
+         print( ex.errorString(verbose=True) )
+
+      except Exception as ex:
+         print( ex )
 
    # Contract
    def _scanNextToken( self ):
@@ -231,3 +245,162 @@ class ParseError( Exception ):
       self.errInfo['indentStr'] = ' ' * ( self.errInfo['colNum'] - 1 )
       return 'Syntax Error: {filename}({lineNum},{colNum})\n{sourceLine}\n{indentStr}^ {errorMsg}'.format( **self.errInfo )
 
+############## DEMONSTRATION #################
+
+if __name__ == '__main__':
+   class PuckScanner( Scanner ):
+      # Character Sets
+      WHITESPACE     = ' \t\n\r'
+      SIGN           = '+-'
+      DIGIT          = '0123456789'
+      ALPHA_LOWER    = 'abcdefghijklmnopqrstuvwxyz'
+      ALPHA_UPPER    = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      ALPHA          = ALPHA_LOWER + ALPHA_UPPER
+      SYMBOL_FIRST   = ALPHA + SIGN + '~!@#$%^&*_=\:/?<>'
+      SYMBOL_REST    = SYMBOL_FIRST + DIGIT
+
+      # Tokens
+      EOF            =   0
+      SYMBOL         = 101    # Value Objects
+      NUMBER         = 102
+      STRING         = 103
+      OPEN_BRACKET   = 201    # Paired Symbols
+      CLOSE_BRACKET  = 202
+      SEMI_COLON     = 500    # Other Symbols
+      POUND_SIGN     = 501
+      PIPE           = 502
+
+      def __init__( self, inputString='' ):
+         super().__init__( inputString )
+
+      def _scanNextToken( self ):
+         self._skipWhitespaceAndComments( )
+
+         nextChar = self.buffer.peek( )
+         if nextChar is None:
+            return PuckScanner.EOF
+         elif nextChar == '[':
+            self.buffer.markStartOfLexeme( )
+            self.buffer.consume( )
+            return PuckScanner.OPEN_BRACKET
+         elif nextChar == ']':
+            self.buffer.markStartOfLexeme( )
+            self.buffer.consume( )
+            return PuckScanner.CLOSE_BRACKET
+         elif nextChar == ';':
+            self.buffer.markStartOfLexeme( )
+            self.buffer.consume( )
+            return PuckScanner.SEMI_COLON
+         elif nextChar == '#':
+            self.buffer.markStartOfLexeme( )
+            self.buffer.consume( )
+            return PuckScanner.POUND_SIGN
+         elif nextChar == '|':
+            self.buffer.markStartOfLexeme( )
+            self.buffer.consume( )
+            return PuckScanner.PIPE
+         elif nextChar == '"':
+            return self._scanStringLiteral( )
+         elif nextChar in '+-0123456789':
+            return self._scanNumOrSymbol( )
+         elif nextChar in PuckScanner.SYMBOL_FIRST:
+            return self._scanSymbol( )
+         else:
+            raise ParseError( self, 'Unknown Token' )
+
+      def _skipWhitespaceAndComments( self ):
+         self.buffer.consumePast( PuckScanner.WHITESPACE )
+
+      def _scanStringLiteral( self ):
+         nextChar = self.buffer.peek( )
+         if nextChar != '"':
+            raise ParseError( self, '\'"\' expected.' )
+         self.buffer.markStartOfLexeme( )
+         self.buffer.consume( )
+         self.buffer.consumeUpTo( '"' )
+         lexeme = self.buffer.getLexeme( )
+         self.buffer.consume( )
+
+         return PuckScanner.STRING
+
+      def _scanNumOrSymbol( self ):
+         nextChar = self.buffer.peek( )
+
+         self.buffer.markStartOfLexeme( )
+         self.saveState( 'MY_SAVED_STATE' )          # <-------  Save the state
+
+         self.buffer.consume( )
+
+         if nextChar in '+-':
+            secondChar = self.buffer.peek( )
+            if secondChar not in '0123456789':
+               self.restoreState( 'MY_SAVED_STATE' ) # <-------- Restore the state
+               return self._scanSymbol( )
+
+         self.buffer.consumePast( '0123456789' )
+
+         if self.buffer.peek() == '.':
+            # Possibly a floating point number
+            self.buffer.consume()
+            if self.buffer.peek() not in '0123456789':
+               # Integer
+               self.buffer.putBack()
+               return PuckScanner.NUMBER
+            else:
+               self.buffer.consumePast( '0123456789' )
+               return PuckScanner.NUMBER
+
+         return PuckScanner.NUMBER
+
+      def _scanSymbol( self ):
+         self.buffer.markStartOfLexeme( )
+         nextChar = self.buffer.peek()
+         if nextChar not in PuckScanner.SYMBOL_FIRST:
+            raise ParseError( self, 'Invalid symbol character' )
+         self.buffer.consume( )
+         self.buffer.consumePast( PuckScanner.SYMBOL_REST )
+
+         return PuckScanner.SYMBOL
+
+
+   puckStatements = '''
+   [false member: #class] sameObjectAs: Object;
+   6.83 - 3;
+   "hello" length;
+   5 = 5;
+   true sameObjectAs: true;
+   null sameObjectAs: 3;
+   [false member: #class] sameObjectAs: Object;
+   booleanNegation sameObjectAs: [true member: #not];
+   [true member: #not] sameObjectAs: booleanNegation;
+   booleanNegation sameObjectAs: [Boolean member: not];
+   [Boolean member: not] sameObjectAs: booleanNegation;
+   [ 1; 3; 3 + 5 ];
+   myList <- #[ a; b; c ];
+   myList at: 1;
+   junk <- 3;
+   [ 1; junk <- 0; 3 + 5 ];
+   [ local <- 100; local ];
+   #[ | val | val + 1 ] evalWithArgs: #[ 4 ];
+   inc <- #[ | val | val + -1 ];
+   inc evalWithArgs: #[ 6 ];
+   #[ | val1 val2 | val1 + val2 ] evalWithArgs: #[ 1; 2 ];
+   3 doTimes: #[ | x | junk <- [ junk + 1 ] ];
+   ct <- 0;
+   #[ ct != 3 ] whileTrue: #[ ct <- [ ct + 1 ] ];
+   [ Boolean member: #not ] evalWithArgs: #[ false ];
+   '''
+
+   import cProfile
+
+   def runTest( ):
+      aPuckScanner = PuckScanner( puckStatements )
+      while aPuckScanner.peekToken() != PuckScanner.EOF:
+         token   = aPuckScanner.peekToken()
+         lexeme  = aPuckScanner.getLexeme()
+         print( '{0:03d}: /{1}/'.format( token, lexeme ) )
+         aPuckScanner.consume()
+
+      print( 'Done!' )
+
+   cProfile.run( 'runTest()' )
