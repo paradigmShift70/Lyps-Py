@@ -12,25 +12,14 @@ class EvaluationError( Exception ):
 class Interpreter( object ):
    def __init__( self, aParser ):
       super().__init__()
-      #self._parser = aParser
    
-   def parse( self, inputExprStr ):
-      '### SHOULD THIS BE MOVED TO INSIDE OF THE EVALUATOR MODULE? ###'
-      return self._parser.parse( inputExprStr )
-   
-   def eval( self, anAST ):
-      raise NotImplementedError( )
-   
-   def makePrintable( self, evaluatedObj ):
+   def reboot( self ):
       raise NotImplementedError( )
    
    def eval( self, anExprStr ):
       raise NotImplementedError( )
 
    def runtimeLibraries( self ):
-      raise NotImplementedError( )
-   
-   def reboot( self ):
       raise NotImplementedError( )
    
 class Listener( object ):

@@ -1,6 +1,6 @@
 from ltk_py3.Scanner import *
 from LypsScanner import *
-from Lyps import *
+from LypsImpl import *
 
 
 '''
