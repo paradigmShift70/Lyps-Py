@@ -2,6 +2,7 @@ import ltk_py3.Scanner as Scanner
 import traceback
 import sys
 import datetime
+import io
 
 
 class EvaluationError( Exception ):
@@ -10,20 +11,44 @@ class EvaluationError( Exception ):
 
 
 class Interpreter( object ):
+   '''Interpreter interface used by Listener.
+   To use the Listener class, the execution environment must be encapsulated
+   behind the following interface.
+   '''
    def __init__( self, aParser ):
       super().__init__()
    
    def reboot( self ):
+      '''Reboot the interpreter.'''
       raise NotImplementedError( )
    
-   def eval( self, anExprStr ):
+   def eval( self, anExprStr, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr ):
+      '''Evaluate an expression string of the target language and return a
+      string expr representing the result of the evaluation.
+      
+      Currently, Listener only understands how to deal with eval() that returns
+      strings.  Future incarnations of Listener may recognize other return value
+      types.
+      
+      The caller can supply streams to use in place of stdin, stdout and stderr.
+      '''
       raise NotImplementedError( )
 
    def runtimeLibraries( self ):
+      '''Return a list of "runtime libraries" for the underlying interpreter.
+      The Listener expects these libraries to be written entirely in the
+      target language.  The runtime libraries are loaded into the interpreter
+      upon interpreter construction, and as part of a call to reboot()'''
+      raise NotImplementedError( )
+   
+   def testFileList( self ):
+      '''Return a list of log files for testing the interpreter.  The listener
+      re-runs each of the logs files; comparing the output with the output
+      recorded in the log file.'''
       raise NotImplementedError( )
    
 class Listener( object ):
-   '''An off-the shealf Listener environment for dynamic languages.
+   '''A generic Listener environment for dynamic languages.
    Heavily ripped-off from Python's own cmd library.'''
    prompt0 = '>>> '
    prompt1 = '... '
@@ -50,9 +75,10 @@ class Listener( object ):
          self._logFile.write( value + '\n' )
 
    def prompt( self, prompt='' ):
-      inputStr = input( prompt )
-      if self._logFile:
+      inputStr = input( prompt ).lstrip()
+      if self._logFile and ((len(inputStr) == 0) or (inputStr[0] != ']')):
          self._logFile.write( prompt + inputStr + '\n' )
+      
       return inputStr.strip( )
 
    def do_reboot( self, cmdParts=None ):
@@ -69,11 +95,11 @@ class Listener( object ):
       '''Usage:  log <filename>
       Begin a new logging session.
       '''
-      if len(args) != 2:
+      if len(args) != 1:
          self.writeLn( self.do_log.__doc__ )
          return
 
-      cmd, filename = args
+      filename = args[0]
       if self._logFile is not None:
          self.writeLn( 'Already logging.\n' )
          return
@@ -82,19 +108,27 @@ class Listener( object ):
       if self._logFile is None:
          self.writeLn( 'Unable to open file for writing.' )
 
-      self.writeLn( ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;' )
-      self.writeLn( ';;;;;;  Starting Log ( {0} ): {1}\n'.format( datetime.datetime.now().isoformat(), filename ) )
+      self.writeLn( '>>> ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;' )
+      self.writeLn( '... ;;;;;;  Starting Log ( {0} ): {1}\n'.format( datetime.datetime.now().isoformat(), filename ) )
+      self.writeLn( '... 0')
+      self.writeLn( '' )
+      self.writeLn( '==> 0')
 
    def do_read( self, args ):
-      '''Usage:  read <filename>
-      Read and execute a log file.
+      '''Usage:  read <filename> [v|v]
+      Read and execute a log file.  V is for verbose.  
       '''
-      if len(args) != 2:
+      if len(args) not in ( 1, 2 ):
          self.writeLn( self.do_read.__doc__ )
          return
       
-      cmd, filename = args
-      self.readAndEvalFile( filename, testFile=False )
+      verbosity=0
+      if len(args) == 2:
+         if args[1].upper() == 'V':
+            verbosity=3
+      
+      filename = args[0]
+      self.readAndEvalFile( filename, testFile=False, verbosity=verbosity )
       self.writeLn( 'Log file read successfully: ' + filename )
 
    def do_test( self, args ):
@@ -107,43 +141,43 @@ class Listener( object ):
          return
       
       if numArgs == 1:
-         cmd, filename = args
+         filename = args
          filenameList = [ ]
       else:
-         filenameList = self._interp.testfileList( )
+         filenameList = self._interp.testFileList( )
       
       for filename in filenameList:
          self.readAndEvalFile( filename, testFile=True )
 
    def do_continue( self, args ):
-      '''Usage:  continue <filename>
-      Read and execute a log file.  Keep the log file open to continue a logging session where you left off.
+      '''Usage:  continue <filename> [V|v]
+      Read and execute a log file.  Keep the log file open to
+      continue a logging session where you left off.  V reads
+      the file verbosely.
       '''
-      if len(args) != 2:
-         self.writeLn( 'Use:  continue <filename>, to begin a new logging session.\n' )
-         return
-
-      cmd, filename = args
-      if self._logFile is not None:
-         self.writeLn( 'Already logging.\n' )
-         return
+      self.do_read( args )
       
-      self.execReadLogListenerCommand( args )
-      
+      filename = args[0]
       self._logFile = open( filename, 'a' )
       if self._logFile is None:
          self.writeLn( 'Unable to open file for append.' )
          return
       
-      self.writeLn( ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;' )
-      self.writeLn( ';;;;;;  Continuing Log ( {0} ): {1}\n'.format( datetime.datetime.now().isoformat(), filename ) )
+      self.writeLn( '>>> ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;' )
+      self.writeLn( '... ;;;;;;  Continuing Log ( {0} ): {1}\n'.format( datetime.datetime.now().isoformat(), filename ) )
+      self.writeLn( '... 0')
+      self.writeLn( '' )
+      self.writeLn( '==> 0')
 
    def do_close( self, args ):
       '''Usage:  close
       Close the current logging session.
       '''
-      self.writeLn( ';;;;;;  Logging ended.' )
-      self.writeLn( ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;' )
+      self.writeLn( '>>> ;;;;;;  Logging ended.' )
+      self.writeLn( '... ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;' )
+      self.writeLn( '... 0')
+      self.writeLn( '' )
+      self.writeLn( '==> 0')
       if self._logFile is not None:
          self._logFile.close( )
       
@@ -169,7 +203,8 @@ class Listener( object ):
       '''Usage: help [<command>]
       List all available commands, or detailed help for a specific command.
       '''
-      if arg:
+      if args:
+         arg = args[0]
          # XXX check arg syntax
          try:
             func = getattr(self, 'help_' + arg)
@@ -290,15 +325,15 @@ class Listener( object ):
          print("%s"%str("  ".join(texts)))
 
    def doCommand( self, listenerCommand ):
-      cmdParts = listenerCommand[1:].split( ' ' )
-      cmdParts = [ x for x in cmdParts if x != '' ]
-      cmd,*arg = cmdParts
+      cmdParts  = listenerCommand[1:].split( ' ' )
+      cmdParts  = [ x for x in cmdParts if x != '' ]
+      cmd,*args = cmdParts
       
       try:
          func = getattr(self, 'do_' + cmd)
       except AttributeError:
          return self.default(line)
-      return func(arg)
+      return func(args)
 
    def readEvalPrintLoop( self ):
       self.writeLn( 'Listener started.' )
@@ -340,26 +375,37 @@ class Listener( object ):
          else:
             inputExprStr += (lineInput.strip() + '\n')
 
-   def readAndEvalFile( self, filename, testFile=False ):
-      file = open( filename, 'r' )
-      if not file:
+   def readAndEvalFile( self, filename, testFile=False, verbosity=0 ):
+      inputText = None
+      with open( filename, 'r') as file:
+         inputText = file.read( )
+      
+      if inputText is None:
          self.writeLn( 'Unable to read file.\n' )
          return
       
-      inputText = file.read()
-      
       if testFile:
          print( '   Test file: {0}... '.format(filename), end='' )
-         self._sessionLog_test( inputText )
+         self._sessionLog_test( inputText, verbosity )
       else:
-         return self._sessionLog_restore( inputText )
+         return self._sessionLog_restore( inputText, verbosity )
 
-   def _sessionLog_restore( self, inputText ):
+   def _sessionLog_restore( self, inputText, verbosity=0 ):
       exprNum = 0
       
+      implStdOut = io.StringIO()
       for exprNum,exprPackage in enumerate(self._iterLog(inputText)):
          exprStr,outputStr,retValStr = exprPackage
-         self._interp.eval( exprStr )
+         if verbosity == 0:
+            self._interp.eval( exprStr, stdout=implStdOut )
+         else:
+            exprLines = exprStr.splitlines()
+            print( '\n>>> {:s}'.format(exprLines[0]) )
+            for line in exprLines[1:]:
+               print( '... {:s}'.format(line) )
+            
+            resultStr = self._interp.eval( exprStr )
+            print( '\n==> ' + resultStr )
          exprNum += 1
       
       return exprNum
@@ -370,63 +416,55 @@ class Listener( object ):
       if verbosity >= 3:
          print()
       
-      try:
-         for exprNum,exprPackage in enumerate(self._iterLog(inputText)):
-            Lyps.L_STDOUT = io.StringIO()
-            exprStr,expectedOutput,expectedRetValStr = exprPackage
-            inputExpr = self._interp.parse( exprStr )
-            resultExpr = str(self._interp.eval( inputExpr ))
-         
-            # Test stdio output
-            outputText = Lyps.L_STDOUT.getvalue()
-            if outputText == expectedOutput:
-               outputTest_passed = True
-               outputTest_reason = 'PASSED!'
-            else:
-               outputTest_passed = False
-               outputTest_reason = 'Failed!  Output value doesn\'t equal expected value.'
-         
-            # Test Return Value
-            if (resultExpr is None) and (expectedRetValStr is not None):
-               retValTest_passed = False
-               retValTest_reason = 'Failed!  Returned <Code>None</Code>; expected <i>value</i>.'
-            elif (resultExpr is not None) and (expectedRetValStr is None):
-               retValTest_passed = False
-               retValTest_reason = 'Failed!  Returned a value; expected <Code>None</Code>'
-            elif (resultExpr is not None) and (expectedRetValStr is not None):
-               if resultExpr == expectedRetValStr:
-                  retValTest_passed = True
-                  retValTest_reason = 'PASSED!'
-               else:
-                  retValTest_passed = False
-                  retValTest_reason = 'Failed!  Return value doesn\'t equal expected value.'
-         
-            # Determine Pass/Fail
-            if outputTest_passed and retValTest_passed:
-               test_passed = True
-               test_reason = 'PASSED!'
-               numPassed += 1
-            else:
-               test_passed = False
-               test_reason = 'Failed!'
-         
-            if verbosity >= 3:
-               print( '     {0}. {1}'.format(str(exprNum).rjust(6), test_reason) )
+      implStdOut = io.StringIO()
+      for exprNum,exprPackage in enumerate(self._iterLog(inputText)):
+         exprStr,expectedOutput,expectedRetValStr = exprPackage
+         resultExpr = self._interp.eval( exprStr, stdout=implStdOut )
       
-         Lyps.L_STDOUT = sys.stdout
+         # Test stdio output
+         #outputText = implStdOut.getvalue()
+         #if outputText == expectedOutput:
+            #outputTest_passed = True
+            #outputTest_reason = 'PASSED!'
+         #else:
+            #outputTest_passed = False
+            #outputTest_reason = 'Failed!  Output value doesn\'t equal expected value.'
       
-         numTests = exprNum + 1
-         numFailed = numTests - numPassed
-         if test_passed:
-            print( 'PASSED!' )
+         # Test Return Value
+         if (resultExpr is None) and (expectedRetValStr is not None):
+            retValTest_passed = False
+            retValTest_reason = 'Failed!  Returned <Code>None</Code>; expected <i>value</i>.'
+         elif (resultExpr is not None) and (expectedRetValStr is None):
+            retValTest_passed = False
+            retValTest_reason = 'Failed!  Returned a value; expected <Code>None</Code>'
+         elif (resultExpr is not None) and (expectedRetValStr is not None):
+            if resultExpr == expectedRetValStr:
+               retValTest_passed = True
+               retValTest_reason = 'PASSED!'
+            else:
+               retValTest_passed = False
+               retValTest_reason = 'Failed!  Return value doesn\'t equal expected value.'
+      
+         # Determine Pass/Fail
+         #if outputTest_passed and retValTest_passed:
+         if retValTest_passed:
+            test_passed = True
+            test_reason = 'PASSED!'
+            numPassed += 1
          else:
-            print( '({0}/{1}) Failed.'.format(numFailed,numTests) )
-         
-      except:
-         Lyps.L_STDOUT = sys.stdout
-         raise
+            test_passed = False
+            test_reason = 'Failed!'
+      
+         if verbosity >= 3:
+            print( '     {0}. {1}'.format(str(exprNum).rjust(6), test_reason) )
    
-
+      numTests = exprNum + 1
+      numFailed = numTests - numPassed
+      if test_passed:
+         print( 'PASSED!' )
+      else:
+         print( '({0}/{1}) Failed.'.format(numFailed,numTests) )
+  
    def _iterLog( self, inputText ):
       stream = Scanner.ScannerLineStream( inputText )
       

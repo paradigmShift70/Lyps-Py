@@ -1,6 +1,7 @@
 import ltk_py3.Listener as Listener
 from LypsParser import LypsParser
-from LypsImpl import LDefPrimitive, LEnv, L_ATOM
+from LypsImpl import LDefPrimitive, LEnv, evalLypsExpr, beautifyLypsExpr
+import sys
 
 
 class LypsInterpreter( object ):
@@ -11,20 +12,10 @@ class LypsInterpreter( object ):
    def reboot( self ):
       self._env = self._env.reInitialize( )
 
-   def eval( self, inputExprStr ):
+   def eval( self, inputExprStr, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr ):
       inputExpr = self._parser.parse( inputExprStr )
-      if isinstance(inputExpr, L_ATOM):
-         result = inputExpr
-      else:
-         result = inputExpr.eval( self._env )
-      
-      return self._makePrintable( result )
-   
-   def _makePrintable( self, evaluatedObj ):
-      if isinstance( evaluatedObj, str ):
-         return '"' + evaluatedObj + '"'
-      else:
-         return str( evaluatedObj )
+      resultExpr = evalLypsExpr( self._env, inputExpr, stdin=stdin, stdout=stdout, stderr=stderr )
+      return beautifyLypsExpr( resultExpr )
    
    def runtimeLibraries( self ):
       return [ 'Lybrary.lyps' ]

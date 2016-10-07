@@ -18,9 +18,36 @@ def _lRuntimeError( fnName, error, usage=None ):
 
    raise LypsRuntimeError( errStr )
 
-# Pything / Lyps Type Representation Mapping
+# Python / Lyps Type Representation Mapping
 L_NUMBER = (int,float,fractions.Fraction)
 L_ATOM   = (int,float,fractions.Fraction,str)
+
+def evalLypsExpr( anEnv, parsedExpr, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr ):
+   global L_STDIN, L_STDOUT, L_STDERR
+   resultExpr = None
+   if isinstance(parsedExpr, L_ATOM):
+      resultExpr = parsedExpr
+   else:
+      try:
+         L_STDIN  = stdin
+         L_STDOUT = stdout
+         L_STDERR = stderr
+         
+         resultExpr = parsedExpr.eval( anEnv )
+      finally:
+         L_STDIN  = sys.stdin
+         L_STDOUT = sys.stdout
+         L_STDERR = sys.stderr
+   
+   return resultExpr
+
+def beautifyLypsExpr( lypsObj ):
+   '''Return a printable, formatted python string representation
+   of a lyps object.'''
+   if isinstance( lypsObj, str ):
+      return '"' + lypsObj + '"'
+   else:
+      return str( lypsObj )
 
 def _lRuntimeError2( function, error ):
    if function.__lusage__ is None:
@@ -66,6 +93,7 @@ def _lTrue( expr ):
 
 L_STDOUT = sys.stdout
 L_STDIN  = sys.stdin
+L_STDERR = sys.stderr
 
 # ##############################
 # The Lyps Execution Environment
@@ -382,7 +410,6 @@ class LPrimitive( object ):
    def __call__( self, env, *args, **keys ):
       return self._fn( env, *args, **keys )
 
-
 class LDefPrimitive( object ):
    def __init__( self, primitiveSymbol, args=None ):
       self._name  = primitiveSymbol.upper( )
@@ -397,7 +424,6 @@ class LDefPrimitive( object ):
       lPrimitivObj.__lusage__ = self._usage
       LEnv.PRMITIVE_LIST.append( (self._name,lPrimitivObj) )
       return lPrimitivObj
-
 
 # ##########################
 # Lyps Primitive Definitions
