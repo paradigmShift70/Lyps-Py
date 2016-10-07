@@ -15,7 +15,7 @@ class Interpreter( object ):
    To use the Listener class, the execution environment must be encapsulated
    behind the following interface.
    '''
-   def __init__( self, aParser ):
+   def __init__( self ):
       super().__init__()
    
    def reboot( self ):
