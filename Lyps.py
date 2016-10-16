@@ -9,7 +9,7 @@ class LypsInterpreter( object ):
       super().__init__( )
       self._parser = LypsParser( )
       self._env    = LEnv( )
-   
+
    def reboot( self ):
       self._env = self._env.reInitialize( )
 
@@ -17,10 +17,10 @@ class LypsInterpreter( object ):
       inputExpr = self._parser.parse( inputExprStr )
       resultExpr = evalLypsExpr( self._env, inputExpr, stdin=stdin, stdout=stdout, stderr=stderr )
       return beautifyLypsExpr( resultExpr )
-   
+
    def runtimeLibraries( self ):
       return [ 'Lybrary.lyps' ]
-   
+
    def testFileList( self ):
       return [ 'test0001.lyps',
                'test0002.lyps' ]
