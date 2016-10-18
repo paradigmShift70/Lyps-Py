@@ -91,6 +91,7 @@ def _lEval3( env, fnName, *args ):
 def _lTrue( expr ):
    return (expr is not LNULL) and (expr != 0)
 
+
 L_STDOUT = sys.stdout
 L_STDIN  = sys.stdin
 L_STDERR = sys.stderr
@@ -716,7 +717,7 @@ def LP_first( env, *args, **Keys ):
    
    theList = args[0]
    if len(theList) == 0:
-      return LList()
+      return LNULL #LList()
    else:
       try:
          return theList.first()

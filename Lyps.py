@@ -3,19 +3,24 @@ from LypsParser import LypsParser
 from LypsImpl import LDefPrimitive, LEnv, evalLypsExpr, beautifyLypsExpr
 import sys
 
+from LypsWalkingInterp import *
 
 class LypsInterpreter( object ):
    def __init__( self ):
       super().__init__( )
       self._parser = LypsParser( )
       self._env    = LEnv( )
+      self._interp = LypsWalkingInterpreter( )
 
    def reboot( self ):
       self._env = self._env.reInitialize( )
+      self._interp.reboot( )
 
    def eval( self, inputExprStr, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr ):
       inputExpr = self._parser.parse( inputExprStr )
-      resultExpr = evalLypsExpr( self._env, inputExpr, stdin=stdin, stdout=stdout, stderr=stderr )
+      
+      resultExpr = self._interp.interpret( inputExpr, stdin=stdin, stdout=stdout, stderr=stderr )
+      #resultExpr = evalLypsExpr( self._env, inputExpr, stdin=stdin, stdout=stdout, stderr=stderr )
       return beautifyLypsExpr( resultExpr )
 
    def runtimeLibraries( self ):
